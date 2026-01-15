@@ -1,0 +1,61 @@
+{
+  "meta_problem_definition": {
+    "problem_class": "STRING (Standard RCPSP, RCMPSP [Multi-Project], Single Machine [JIT], RCPSP with NRR/RR)",
+    "topology": {
+      "structure": "STRING (Single DAG, Multiple Independent DAGs, Independent Jobs [No Predecessors])",
+      "is_multiproject": "BOOLEAN (True if jobs are nested in projects)",
+      "constraints_type": ["Finish-Start", "Resource Capacity", "Deadline/Due-Date"]
+    }
+  },
+
+  "optimization_criteria": {
+    "objective_type": "STRING (Minimization of Makespan, Minimization of Weighted Penalties [Early/Tardy])",
+    "global_parameters": {
+      "due_date_field": "path: project_goal.due_date OR parameters.common_due_date",
+      "tardiness_cost": "FLOAT"
+    },
+    "local_job_parameters": {
+      "has_penalties": "BOOLEAN (True for JIT problems)",
+      "penalty_fields": ["earliness_unit_penalty", "tardiness_unit_penalty"]
+    }
+  },
+
+  "resource_logic": {
+    "scope": "STRING (Global Shared Resources or Local Resources)",
+    "replenishment": {
+      "renewable": "BOOLEAN",
+      "non_renewable": "BOOLEAN",
+      "consumable_producible": "BOOLEAN"
+    }
+  },
+
+  "data_specification": {
+    "root_structure": {
+      "job_collection_path": "STRING (Path to jobs array. Examples: 'jobs', 'jobs[*].activities' for multi-project)",
+      "resource_collection_path": "STRING (Path to resources array. Example: 'resources')"
+    },
+    "field_mapping_heuristics": {
+      "id": ["id"],
+      "duration": ["duration"],
+      "successors": ["successors", "precedences.time_successors"],
+      "resource_request": ["resources_required"],
+      "resource_consumption": ["resource_consumption"]
+    },
+    "resource_definition_mapping": {
+      "id": ["id"],
+      "capacity": ["capacity"],
+      "stock": ["initial_stock"]
+    }
+  },
+
+  "solver_generation_mandate": {
+    "strategy_selection": "AUTONOMOUS (LLM chooses the best fit: e.g. SGS, GA, etc.)",
+    "priority_rule_mandate": "LLM must select/construct a rule based on metadata",
+    "code_requirements": {
+      "language": "python",
+      "input_parsing": "Must use 'data_specification' paths to dynamically extract data regardless of JSON structure.",
+      "output_format": "Dict(schedule={id: start_time}, metrics={makespan, total_penalty, time}), generate a full Python script that implements this logic",
+      "libraries": ["json", "time", "heapq", "collections"]
+    }
+  }
+}
